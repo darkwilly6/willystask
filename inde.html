@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Willy's Task</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">Willy's<strong>Task</strong></span>
+    </div>
+    <button class="sidebar-close" id="sidebarClose">✕</button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-view="dashboard">
+      <span class="nav-icon">⬡</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-view="today">
+      <span class="nav-icon">◈</span>
+      <span>Hoy</span>
+    </button>
+    <button class="nav-item" data-view="calendar">
+      <span class="nav-icon">◫</span>
+      <span>Calendario</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-section-label">RAMAS</div>
+  <div class="branch-filters">
+    <button class="branch-btn active" data-branch="all">
+      <span class="branch-dot all"></span> Todas
+    </button>
+    <button class="branch-btn" data-branch="trading">
+      <span class="branch-dot trading"></span> Trading
+    </button>
+    <button class="branch-btn" data-branch="nyxar">
+      <span class="branch-dot nyxar"></span> Nyxar
+    </button>
+    <button class="branch-btn" data-branch="personal">
+      <span class="branch-dot personal"></span> Personal
+    </button>
+  </div>
+
+  <div class="sidebar-section-label">ETIQUETAS</div>
+  <div class="label-filters">
+    <button class="label-filter active" data-label="all">Todas</button>
+    <button class="label-filter" data-label="fija">📌 Fija</button>
+    <button class="label-filter" data-label="repetitiva">🔁 Repetitiva</button>
+    <button class="label-filter" data-label="urgente">🚨 Urgente</button>
+    <button class="label-filter" data-label="pendiente">⏳ Pendiente</button>
+    <button class="label-filter" data-label="proxima">🔜 Próxima</button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="theme-toggle" id="themeToggle">
+      <span class="theme-label">Modo</span>
+      <div class="toggle-switch">
+        <span class="toggle-icon sun">☀</span>
+        <span class="toggle-icon moon">☽</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== OVERLAY ===== -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ===== MAIN ===== -->
+<main class="main-content" id="mainContent">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="current-date" id="currentDate"></div>
+      <button class="add-task-btn-top" id="addTaskBtnTop">+ Nueva Tarea</button>
+    </div>
+  </header>
+
+  <!-- ===== VIEW: DASHBOARD ===== -->
+  <section class="view active" id="view-dashboard">
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-total">0</div>
+        <div class="stat-label">Total Hoy</div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="stat-number" id="stat-pending">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="stat-number" id="stat-done">0</div>
+        <div class="stat-label">Completadas</div>
+      </div>
+      <div class="stat-card accent-red">
+        <div class="stat-number" id="stat-urgent">0</div>
+        <div class="stat-label">Urgentes</div>
+      </div>
+    </div>
+
+    <!-- Upcoming tasks -->
+    <div class="section-header">
+      <h2 class="section-title">Próximas Tareas</h2>
+      <div class="section-badge" id="upcoming-count">0</div>
+    </div>
+    <div class="task-list" id="upcoming-list"></div>
+
+    <!-- Incomplete tasks -->
+    <div class="section-header">
+      <h2 class="section-title">Sin Completar</h2>
+      <div class="section-badge warning" id="incomplete-count">0</div>
+    </div>
+    <div class="task-list" id="incomplete-list"></div>
+
+  </section>
+
+  <!-- ===== VIEW: TODAY ===== -->
+  <section class="view" id="view-today">
+    <div class="today-nav">
+      <button class="day-nav-btn" id="prevDay">‹</button>
+      <div class="today-label" id="todayLabel"></div>
+      <button class="day-nav-btn" id="nextDay">›</button>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <!-- ===== VIEW: CALENDAR ===== -->
+  <section class="view" id="view-calendar">
+    <div class="cal-toolbar">
+      <button class="cal-view-btn active" data-calview="month">Mes</button>
+      <button class="cal-view-btn" data-calview="week">Semana</button>
+      <button class="cal-view-btn" data-calview="day">Día</button>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="calPrev">‹</button>
+        <span class="cal-title" id="calTitle"></span>
+        <button class="cal-nav-btn" id="calNext">›</button>
+      </div>
+    </div>
+    <div class="calendar-body" id="calendarBody"></div>
+  </section>
+
+</main>
+
+<!-- ===== FAB ===== -->
+<button class="fab" id="fab">+</button>
+
+<!-- ===== TASK MODAL ===== -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="taskModal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Nueva Tarea</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label">Nombre de la tarea *</label>
+        <input type="text" class="form-input" id="taskName" placeholder="Ej: Analizar gráficos BTC" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rama *</label>
+          <select class="form-select" id="taskBranch">
+            <option value="trading">🟠 Trading</option>
+            <option value="nyxar">🟣 Nyxar</option>
+            <option value="personal">🟢 Personal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo *</label>
+          <select class="form-select" id="taskType">
+            <option value="fija">📌 Fija</option>
+            <option value="repetitiva">🔁 Repetitiva</option>
+            <option value="urgente">🚨 Urgente</option>
+            <option value="pendiente">⏳ Pendiente</option>
+            <option value="proxima">🔜 Próxima</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Repeat days (shown when type = repetitiva) -->
+      <div class="form-group" id="repeatDaysGroup" style="display:none">
+        <label class="form-label">Repetir en</label>
+        <div class="days-selector">
+          <button type="button" class="day-toggle" data-day="1">L</button>
+          <button type="button" class="day-toggle" data-day="2">M</button>
+          <button type="button" class="day-toggle" data-day="3">X</button>
+          <button type="button" class="day-toggle" data-day="4">J</button>
+          <button type="button" class="day-toggle" data-day="5">V</button>
+          <button type="button" class="day-toggle" data-day="6">S</button>
+          <button type="button" class="day-toggle" data-day="0">D</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Fecha</label>
+        <input type="date" class="form-input" id="taskDate" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hora inicio</label>
+          <input type="time" class="form-input" id="taskStart" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora fin</label>
+          <input type="time" class="form-input" id="taskEnd" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Duración estimada (min)</label>
+        <input type="number" class="form-input" id="taskDuration" placeholder="Ej: 60" min="1" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea class="form-textarea" id="taskNotes" placeholder="Detalles adicionales..."></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="modalCancel">Cancelar</button>
+      <button class="btn-primary" id="modalSave">Guardar Tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TASK DETAIL MODAL ===== -->
+<div class="modal-backdrop" id="detailBackdrop">
+  <div class="modal detail-modal" id="detailModal">
+    <div class="modal-header">
+      <div class="detail-branch-badge" id="detailBranch"></div>
+      <button class="modal-close" id="detailClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <h2 class="detail-title" id="detailName"></h2>
+      <div class="detail-meta" id="detailMeta"></div>
+      <div class="detail-notes" id="detailNotes"></div>
+    </div>
+    <div class="modal-footer detail-footer">
+      <button class="btn-status completed" id="btnComplete">✓ Completada</button>
+      <button class="btn-status suspended" id="btnSuspend">⊘ Suspendida</button>
+      <button class="btn-secondary" id="btnEdit">✎ Editar</button>
+      <button class="btn-danger" id="btnDelete">✕ Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
