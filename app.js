@@ -42,7 +42,7 @@ const FIREBASE_CONFIG = {
 // =============================================
 const GCAL_CLIENT_ID = "14150128019-6uam085u6ksh9hdi8ioq1qce2bip0bo5.apps.googleusercontent.com";
 const GCAL_API_KEY   = "AIzaSyDA01VM11plenU8w-7Ch3o_QBhp8qzWNys";
-const GCAL_SCOPES    = "https://www.googleapis.com/auth/calendar";
+const GCAL_SCOPES    = "https://www.googleapis.com/auth/calendar.events";
 const GCAL_DISCOVERY = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
 
 // =============================================
