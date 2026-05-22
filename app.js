@@ -715,9 +715,19 @@ async function saveTask() {
       } else {
         saveLocalTasks();
       }
-      if (gcalSignedIn && taskData.gcalEventId) {
-        await updateGCalEvent(taskData);
-      }
+if (gcalSignedIn) {
+  if (taskData.gcalEventId) {
+    await updateGCalEvent(taskData);
+  } else {
+    taskData.gcalEventId = await createGCalEvent(taskData) || null;
+
+    if (firestoreAvailable) {
+      await saveTaskToFirestore(taskData);
+    } else {
+      saveLocalTasks();
+    }
+  }
+}
       showToast("Tarea actualizada ✓", "success");
     }
   } else {
