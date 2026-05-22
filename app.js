@@ -162,12 +162,17 @@ function updateGCalStatus(isSignedIn) {
 }
 
 async function gcalSignIn() {
-  if (!window.gapi) { showToast("Configura el CLIENT_ID de Google Calendar primero", "error"); return; }
+  if (!window.gapi) {
+    showToast("Google Calendar aún no cargó. Recarga la página.", "error");
+    return;
+  }
+
   try {
     await gapi.auth2.getAuthInstance().signIn();
     showToast("Google Calendar conectado ✓", "success");
   } catch (e) {
-    showToast("Error al conectar Google Calendar", "error");
+    console.error("Error real al conectar Google Calendar:", e);
+    showToast("Error Google: " + (e.error || e.details || e.message || "ver consola"), "error");
   }
 }
 
