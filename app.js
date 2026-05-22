@@ -132,28 +132,55 @@ async function deleteTaskFromFirestore(taskId) {
 // =============================================
 // GOOGLE CALENDAR INIT
 // =============================================
+let tokenClient = null;
+let gcalAccessToken = null;
+
 function initGoogleCalendar() {
-  if (!GCAL_CLIENT_ID || GCAL_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") return;
-  const script = document.createElement("script");
-  script.src = "https://apis.google.com/js/api.js";
-  script.onload = () => {
-    gapi.load("client:auth2", async () => {
+  if (!GCAL_CLIENT_ID || GCAL_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") {
+    setIntegrationStatus("gcal", false, "Sin config");
+    return;
+  }
+
+  const gapiScript = document.createElement("script");
+  gapiScript.src = "https://apis.google.com/js/api.js";
+  gapiScript.onload = () => {
+    gapi.load("client", async () => {
       try {
         await gapi.client.init({
           apiKey: GCAL_API_KEY,
-          clientId: GCAL_CLIENT_ID,
           discoveryDocs: [GCAL_DISCOVERY],
-          scope: GCAL_SCOPES,
         });
-        gapi.auth2.getAuthInstance().isSignedIn.listen(updateGCalStatus);
-        updateGCalStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+
+        setIntegrationStatus("gcal", false, "Desconectado");
       } catch (e) {
-        console.error("GCal init error:", e);
+        console.error("GCal client init error:", e);
         setIntegrationStatus("gcal", false, "Error");
       }
     });
   };
-  document.head.appendChild(script);
+  document.head.appendChild(gapiScript);
+
+  const gisScript = document.createElement("script");
+  gisScript.src = "https://accounts.google.com/gsi/client";
+  gisScript.onload = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GCAL_CLIENT_ID,
+      scope: GCAL_SCOPES,
+      callback: (tokenResponse) => {
+        if (tokenResponse && tokenResponse.access_token) {
+          gcalAccessToken = tokenResponse.access_token;
+          gapi.client.setToken({ access_token: gcalAccessToken });
+          updateGCalStatus(true);
+          showToast("Google Calendar conectado ✓", "success");
+        } else {
+          console.error("Token response error:", tokenResponse);
+          updateGCalStatus(false);
+          showToast("No se pudo conectar Google Calendar", "error");
+        }
+      },
+    });
+  };
+  document.head.appendChild(gisScript);
 }
 
 function updateGCalStatus(isSignedIn) {
@@ -162,17 +189,16 @@ function updateGCalStatus(isSignedIn) {
 }
 
 async function gcalSignIn() {
-  if (!window.gapi) {
-    showToast("Google Calendar aún no cargó. Recarga la página.", "error");
+  if (!tokenClient) {
+    showToast("Google Calendar aún está cargando. Espera unos segundos y vuelve a intentar.", "error");
     return;
   }
 
   try {
-    await gapi.auth2.getAuthInstance().signIn();
-    showToast("Google Calendar conectado ✓", "success");
+    tokenClient.requestAccessToken({ prompt: "consent" });
   } catch (e) {
     console.error("Error real al conectar Google Calendar:", e);
-    showToast("Error Google: " + (e.error || e.details || e.message || "ver consola"), "error");
+    showToast("Error Google: " + (e.error || e.message || "ver consola"), "error");
   }
 }
 
