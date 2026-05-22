@@ -38,102 +38,11 @@ const FIREBASE_CONFIG = {
 };
 
 // =============================================
-// GOOGLE CALENDAR CONFIG — REPLACE WITH YOURS
-// =============================================
-const GCAL_CLIENT_ID = "14150128019-6uam085u6ksh9hdi8ioq1qce2bip0bo5.apps.googleusercontent.com";
-const GCAL_API_KEY   = "AIzaSyDA01VM11plenU8w-7Ch3o_QBhp8qzWNys";
-const GCAL_SCOPES    = "https://www.googleapis.com/auth/calendar.events";
-const GCAL_DISCOVERY = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
-
-// =============================================
-// APP STATE
-// =============================================
-let tasks = [];           // in-memory task list
-let currentView = "dashboard";
-let currentBranch = "all";
-let currentLabel = "all";
-let editingTaskId = null;
-let openDetailId = null;
-let todayOffset = 0;      // days from today for "Hoy" view
-let calDate = new Date();
-let calViewMode = "month"; // month | week | day
-
-// Firebase & GCal handles
-let db = null;
-let firestoreAvailable = false;
-let gcalSignedIn = false;
-let tasksUnsubscribe = null;
-
-// =============================================
-// FIREBASE INIT
-// =============================================
-async function initFirebase() {
-  const { apiKey } = FIREBASE_CONFIG;
-  if (!apiKey || apiKey === "YOUR_FIREBASE_API_KEY") {
-    setIntegrationStatus("firebase", false, "Sin config");
-    return;
-  }
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy }
-      = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-
-    const app = initializeApp(FIREBASE_CONFIG);
-    db = getFirestore(app);
-    firestoreAvailable = true;
-    setIntegrationStatus("firebase", true, "Conectado");
-    showToast("Firebase conectado ✓", "success");
-
-    // Real-time listener
-    const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
-    tasksUnsubscribe = onSnapshot(q, (snapshot) => {
-      tasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderAll();
-    });
-
-    // Expose Firestore helpers globally
-    window._fs = { collection, addDoc, updateDoc, deleteDoc, doc, db };
-  } catch (e) {
-    console.error("Firebase error:", e);
-    setIntegrationStatus("firebase", false, "Error");
-  }
-}
-
-// =============================================
-// FIRESTORE CRUD
-// =============================================
-async function saveTaskToFirestore(task) {
-  if (!firestoreAvailable) return;
-  const { collection, addDoc, updateDoc, doc, db } = window._fs;
-  try {
-    if (task.id && !task.id.startsWith("local-")) {
-      const ref = doc(db, "tasks", task.id);
-      await updateDoc(ref, task);
-    } else {
-      const { id, ...data } = task;
-      const ref = await addDoc(collection(db, "tasks"), { ...data, createdAt: Date.now() });
-      return ref.id;
-    }
-  } catch (e) {
-    console.error("Firestore save error:", e);
-  }
-}
-
-async function deleteTaskFromFirestore(taskId) {
-  if (!firestoreAvailable || taskId.startsWith("local-")) return;
-  const { deleteDoc, doc, db } = window._fs;
-  try {
-    await deleteDoc(doc(db, "tasks", taskId));
-  } catch (e) {
-    console.error("Firestore delete error:", e);
-  }
-}
-
-// =============================================
 // GOOGLE CALENDAR INIT
 // =============================================
 let tokenClient = null;
 let gcalAccessToken = null;
+let gapiReady = false;
 
 function initGoogleCalendar() {
   if (!GCAL_CLIENT_ID || GCAL_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") {
@@ -151,7 +60,17 @@ function initGoogleCalendar() {
           discoveryDocs: [GCAL_DISCOVERY],
         });
 
-        setIntegrationStatus("gcal", false, "Desconectado");
+        gapiReady = true;
+
+        if (gcalAccessToken) {
+          gapi.client.setToken({ access_token: gcalAccessToken });
+          updateGCalStatus(true);
+        } else {
+          setIntegrationStatus("gcal", false, "Desconectado");
+        }
+
+        tryAutoReconnectGCal();
+
       } catch (e) {
         console.error("GCal client init error:", e);
         setIntegrationStatus("gcal", false, "Error");
@@ -163,38 +82,59 @@ function initGoogleCalendar() {
   const gisScript = document.createElement("script");
   gisScript.src = "https://accounts.google.com/gsi/client";
   gisScript.onload = () => {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: GCAL_CLIENT_ID,
-    scope: GCAL_SCOPES,
-    callback: (tokenResponse) => {
-      if (tokenResponse && tokenResponse.access_token) {
-        gcalAccessToken = tokenResponse.access_token;
-        gapi.client.setToken({ access_token: gcalAccessToken });
-        updateGCalStatus(true);
-        localStorage.setItem("willystask_gcal_connected", "true");
-        showToast("Google Calendar conectado ✓", "success");
-      } else {
-        console.error("Token response error:", tokenResponse);
-        updateGCalStatus(false);
-        showToast("No se pudo conectar Google Calendar", "error");
-      }
-    },
-  });
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GCAL_CLIENT_ID,
+      scope: GCAL_SCOPES,
+      callback: (tokenResponse) => {
+        if (tokenResponse.error) {
+          console.warn("Google token error:", tokenResponse);
+          updateGCalStatus(false);
+          showToast("Google Calendar necesita reconexión manual", "error");
+          return;
+        }
 
+        if (tokenResponse && tokenResponse.access_token) {
+          gcalAccessToken = tokenResponse.access_token;
+
+          if (window.gapi && gapi.client) {
+            gapi.client.setToken({ access_token: gcalAccessToken });
+          }
+
+          updateGCalStatus(true);
+          localStorage.setItem("willystask_gcal_connected", "true");
+          showToast("Google Calendar conectado ✓", "success");
+        } else {
+          console.error("Token response error:", tokenResponse);
+          updateGCalStatus(false);
+          showToast("No se pudo conectar Google Calendar", "error");
+        }
+      },
+    });
+
+    tryAutoReconnectGCal();
+  };
+  document.head.appendChild(gisScript);
+}
+
+function tryAutoReconnectGCal() {
   const wasConnected = localStorage.getItem("willystask_gcal_connected") === "true";
 
-  if (wasConnected) {
-    setTimeout(() => {
-      try {
-        tokenClient.requestAccessToken({ prompt: "" });
-      } catch (e) {
-        console.warn("No se pudo reconectar Google Calendar automáticamente:", e);
-        updateGCalStatus(false);
-      }
-    }, 1000);
-  }
-};
-  document.head.appendChild(gisScript);
+  if (!wasConnected) return;
+  if (!tokenClient) return;
+  if (!gapiReady) return;
+
+  if (sessionStorage.getItem("willystask_gcal_reconnect_tried") === "true") return;
+  sessionStorage.setItem("willystask_gcal_reconnect_tried", "true");
+
+  setTimeout(() => {
+    try {
+      setIntegrationStatus("gcal", false, "Reconectando...");
+      tokenClient.requestAccessToken({ prompt: "" });
+    } catch (e) {
+      console.warn("No se pudo reconectar Google Calendar automáticamente:", e);
+      updateGCalStatus(false);
+    }
+  }, 500);
 }
 
 function updateGCalStatus(isSignedIn) {
