@@ -163,23 +163,37 @@ function initGoogleCalendar() {
   const gisScript = document.createElement("script");
   gisScript.src = "https://accounts.google.com/gsi/client";
   gisScript.onload = () => {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: GCAL_CLIENT_ID,
-      scope: GCAL_SCOPES,
-      callback: (tokenResponse) => {
-        if (tokenResponse && tokenResponse.access_token) {
-          gcalAccessToken = tokenResponse.access_token;
-          gapi.client.setToken({ access_token: gcalAccessToken });
-          updateGCalStatus(true);
-          showToast("Google Calendar conectado ✓", "success");
-        } else {
-          console.error("Token response error:", tokenResponse);
-          updateGCalStatus(false);
-          showToast("No se pudo conectar Google Calendar", "error");
-        }
-      },
-    });
-  };
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GCAL_CLIENT_ID,
+    scope: GCAL_SCOPES,
+    callback: (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        gcalAccessToken = tokenResponse.access_token;
+        gapi.client.setToken({ access_token: gcalAccessToken });
+        updateGCalStatus(true);
+        localStorage.setItem("willystask_gcal_connected", "true");
+        showToast("Google Calendar conectado ✓", "success");
+      } else {
+        console.error("Token response error:", tokenResponse);
+        updateGCalStatus(false);
+        showToast("No se pudo conectar Google Calendar", "error");
+      }
+    },
+  });
+
+  const wasConnected = localStorage.getItem("willystask_gcal_connected") === "true";
+
+  if (wasConnected) {
+    setTimeout(() => {
+      try {
+        tokenClient.requestAccessToken({ prompt: "" });
+      } catch (e) {
+        console.warn("No se pudo reconectar Google Calendar automáticamente:", e);
+        updateGCalStatus(false);
+      }
+    }, 1000);
+  }
+};
   document.head.appendChild(gisScript);
 }
 
