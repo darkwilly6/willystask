@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Willy's Task</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c5cfc" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L16 5V13L9 17L2 13V5L9 1Z" fill="url(#lg)" stroke="rgba(255,255,255,.15)" stroke-width=".5"/><defs><linearGradient id="lg" x1="2" y1="1" x2="16" y2="17" gradientUnits="userSpaceOnUse"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#7c5cfc"/></linearGradient></defs></svg>
+      </div>
+      <span class="logo-text">Willy's<strong>Task</strong></span>
+    </div>
+    <button class="sidebar-close" id="sidebarClose">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-view="dashboard">
+      <svg class="nav-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-view="today">
+      <svg class="nav-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5V8l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>Hoy</span>
+    </button>
+    <button class="nav-item" data-view="calendar">
+      <svg class="nav-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3" width="13" height="11.5" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 6.5h13M5 1.5V4M11 1.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>Calendario</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-section-label">RAMAS</div>
+  <div class="branch-filters">
+    <button class="branch-btn active" data-branch="all">
+      <span class="branch-dot all"></span><span>Todas</span>
+    </button>
+    <button class="branch-btn" data-branch="trading">
+      <span class="branch-dot trading"></span><span>Trading</span>
+    </button>
+    <button class="branch-btn" data-branch="nyxar">
+      <span class="branch-dot nyxar"></span><span>Nyxar</span>
+    </button>
+    <button class="branch-btn" data-branch="personal">
+      <span class="branch-dot personal"></span><span>Personal</span>
+    </button>
+  </div>
+
+  <div class="sidebar-section-label">ETIQUETAS</div>
+  <div class="label-filters">
+    <button class="label-filter active" data-label="all">Todas</button>
+    <button class="label-filter" data-label="fija">📌 Fija</button>
+    <button class="label-filter" data-label="repetitiva">🔁 Repetitiva</button>
+    <button class="label-filter" data-label="urgente">🚨 Urgente</button>
+    <button class="label-filter" data-label="pendiente">⏳ Pendiente</button>
+    <button class="label-filter" data-label="proxima">🔜 Próxima</button>
+  </div>
+
+  <div class="sidebar-section-label">INTEGRACIONES</div>
+  <div class="integrations-section">
+    <div class="integration-item" id="firebaseStatus">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11L5 4l2 3.5L9 2l3 9H2Z" fill="#FF6D00" opacity=".9"/></svg>
+      <span class="integration-label">Firebase</span>
+      <span class="integration-dot" id="firebaseDot"></span>
+      <span class="integration-state" id="firebaseState">—</span>
+    </div>
+    <div class="integration-item" id="gcalStatus">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      <span class="integration-label">Google Cal</span>
+      <span class="integration-dot" id="gcalDot"></span>
+      <span class="integration-state" id="gcalState">—</span>
+    </div>
+    <button class="btn-connect" id="btnConnectGoogle">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Conectar Google
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="theme-toggle" id="themeToggle">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.5M8 13.5V15M15 8h-1.5M2.5 8H1M12.95 3.05l-1.06 1.06M4.11 11.89l-1.06 1.06M12.95 12.95l-1.06-1.06M4.11 4.11 3.05 3.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="theme-label">Modo</span>
+      <div class="toggle-track" id="toggleTrack">
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- MAIN -->
+<main class="main-content" id="mainContent">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="current-date" id="currentDate"></div>
+      <button class="add-task-btn-top" id="addTaskBtnTop">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        Nueva Tarea
+      </button>
+    </div>
+  </header>
+
+  <!-- DASHBOARD -->
+  <section class="view active" id="view-dashboard">
+
+    <div class="dashboard-greeting">
+      <div class="greeting-text">
+        <h1 id="greetingTitle">¡Hola! Aquí tienes tu progreso de hoy.</h1>
+        <p>Organiza, enfócate y alcanza tus metas.</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon-wrap purple">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L16 5V13L9 17L2 13V5L9 1Z" fill="currentColor" opacity=".8"/></svg>
+        </div>
+        <div class="stat-number" id="stat-total">0</div>
+        <div class="stat-label">Total Hoy</div>
+        <div class="stat-sub" id="stat-vs-yesterday"></div>
+      </div>
+      <div class="stat-card accent-orange">
+        <div class="stat-icon-wrap orange">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5v4l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="stat-number" id="stat-pending">0</div>
+        <div class="stat-label">Pendientes</div>
+        <div class="stat-sub" id="stat-pending-pct"></div>
+      </div>
+      <div class="stat-card accent-green">
+        <div class="stat-icon-wrap green">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 9l2.5 2.5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="stat-number" id="stat-done">0</div>
+        <div class="stat-label">Completadas</div>
+        <div class="stat-sub" id="stat-done-pct"></div>
+      </div>
+      <div class="stat-card accent-red">
+        <div class="stat-icon-wrap red">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5.5V9M9 12v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="stat-number" id="stat-urgent">0</div>
+        <div class="stat-label">Urgentes</div>
+        <div class="stat-sub" id="stat-urgent-sub"></div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2 class="section-title">Próximas Tareas</h2>
+      <div class="section-badge" id="upcoming-count">0</div>
+      <a class="section-link" href="#" id="seeAllUpcoming">Ver todas</a>
+    </div>
+    <div class="task-list task-list-grid" id="upcoming-list"></div>
+
+    <div class="section-header">
+      <h2 class="section-title">Sin Completar</h2>
+      <div class="section-badge warning" id="incomplete-count">0</div>
+    </div>
+    <div class="task-list" id="incomplete-list"></div>
+  </section>
+
+  <!-- HOY -->
+  <section class="view" id="view-today">
+    <div class="today-nav">
+      <button class="day-nav-btn" id="prevDay">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="today-label" id="todayLabel"></div>
+      <button class="day-nav-btn" id="nextDay">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <!-- CALENDARIO -->
+  <section class="view" id="view-calendar">
+    <div class="cal-toolbar">
+      <div class="cal-view-group">
+        <button class="cal-view-btn active" data-calview="month">Mes</button>
+        <button class="cal-view-btn" data-calview="week">Semana</button>
+        <button class="cal-view-btn" data-calview="day">Día</button>
+      </div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="calPrev">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="cal-title" id="calTitle"></span>
+        <button class="cal-nav-btn" id="calNext">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 11l4-4-4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="calendar-body" id="calendarBody"></div>
+  </section>
+
+</main>
+
+<!-- FAB -->
+<button class="fab" id="fab">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v16M3 11h16" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+</button>
+
+<!-- MODAL NUEVA/EDITAR TAREA -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="taskModal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Nueva Tarea</h3>
+      <button class="modal-close" id="modalClose">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 3L3 11M3 3l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre de la tarea *</label>
+        <input type="text" class="form-input" id="taskName" placeholder="Ej: Analizar gráficos BTC" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rama *</label>
+          <select class="form-select" id="taskBranch">
+            <option value="trading">🟠 Trading</option>
+            <option value="nyxar">🟣 Nyxar</option>
+            <option value="personal">🟢 Personal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo *</label>
+          <select class="form-select" id="taskType">
+            <option value="fija">📌 Fija</option>
+            <option value="repetitiva">🔁 Repetitiva</option>
+            <option value="urgente">🚨 Urgente</option>
+            <option value="pendiente">⏳ Pendiente</option>
+            <option value="proxima">🔜 Próxima</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="repeatDaysGroup" style="display:none">
+        <label class="form-label">Repetir en</label>
+        <div class="days-selector">
+          <button type="button" class="day-toggle" data-day="1">L</button>
+          <button type="button" class="day-toggle" data-day="2">M</button>
+          <button type="button" class="day-toggle" data-day="3">X</button>
+          <button type="button" class="day-toggle" data-day="4">J</button>
+          <button type="button" class="day-toggle" data-day="5">V</button>
+          <button type="button" class="day-toggle" data-day="6">S</button>
+          <button type="button" class="day-toggle" data-day="0">D</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha</label>
+        <input type="date" class="form-input" id="taskDate" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hora inicio</label>
+          <input type="time" class="form-input" id="taskStart" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora fin</label>
+          <input type="time" class="form-input" id="taskEnd" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duración estimada (min)</label>
+        <input type="number" class="form-input" id="taskDuration" placeholder="Ej: 60" min="1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea class="form-textarea" id="taskNotes" placeholder="Detalles adicionales..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="modalCancel">Cancelar</button>
+      <button class="btn-primary" id="modalSave">Guardar Tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-backdrop" id="detailBackdrop">
+  <div class="modal detail-modal" id="detailModal">
+    <div class="modal-header">
+      <div class="detail-branch-badge" id="detailBranch"></div>
+      <button class="modal-close" id="detailClose">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 3L3 11M3 3l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <h2 class="detail-title" id="detailName"></h2>
+      <div class="detail-meta" id="detailMeta"></div>
+      <div class="detail-notes" id="detailNotes"></div>
+    </div>
+    <div class="modal-footer detail-footer">
+      <button class="btn-status completed" id="btnComplete">✓ Completada</button>
+      <button class="btn-status suspended" id="btnSuspend">⊘ Suspendida</button>
+      <button class="btn-secondary" id="btnEdit">✎ Editar</button>
+      <button class="btn-danger" id="btnDelete">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
